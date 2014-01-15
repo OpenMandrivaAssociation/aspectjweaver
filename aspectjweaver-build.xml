@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project name="aspectjweaver" default="jar" basedir=".">
+  <property name="src.dir" value="."/>
+  <property name="build.dir" value="./build"/>
+  <property name="build.classes" value="${build.dir}/classes"/>
+  <property name="doc.api.dir" value="javadoc"/>
+  <target name="compile">
+    <mkdir dir="${build.dir}"/>
+    <mkdir dir="${build.classes}"/>
+    <javac srcdir="${src.dir}" destdir="${build.classes}">
+      <include name="**/*.java"/>
+    </javac>
+    <copy todir="${build.classes}">
+      <fileset dir="${src.dir}" includes="**/*.properties,**/*.xsl"/>
+    </copy>
+  </target>
+  <target name="jar" depends="compile">
+    <jar jarfile="${build.dir}/aspectjweaver.jar">
+      <fileset dir="${build.classes}">
+        <include name="org/**"/>
+      </fileset>
+    </jar>
+  </target>
+  <target name="javadoc" description="Generated Java API documentation">
+    <delete dir="${doc.api.dir}" quiet="true"></delete>
+    <javadoc destdir="${doc.api.dir}" windowtitle="aspectjweaver API" sourcepath="${src.dir}" linksource="no" encoding="ISO8859-1"/>
+  </target>
+  <target name="clean">
+    <delete dir="${build.dir}"/>
+  </target>
+</project>
+

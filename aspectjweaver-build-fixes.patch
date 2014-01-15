@@ -1,0 +1,14 @@
+diff -ur aspectjweaver-1.6.12.orig/org/aspectj/weaver/bcel/asm/StackMapAdder.java aspectjweaver-1.6.12/org/aspectj/weaver/bcel/asm/StackMapAdder.java
+--- aspectjweaver-1.6.12.orig/org/aspectj/weaver/bcel/asm/StackMapAdder.java	2011-08-08 12:18:02.000000000 -0400
++++ aspectjweaver-1.6.12/org/aspectj/weaver/bcel/asm/StackMapAdder.java	2011-12-20 14:24:36.834753844 -0500
+@@ -15,8 +15,8 @@
+ import org.aspectj.weaver.UnresolvedType;
+ import org.aspectj.weaver.World;
+ 
+-import aj.org.objectweb.asm.ClassReader;
+-import aj.org.objectweb.asm.ClassWriter;
++import org.objectweb.asm.ClassReader;
++import org.objectweb.asm.ClassWriter;
+ 
+ /**
+  * Uses asm to add the stack map attribute to methods in a class. The class is passed in as pure byte data and then a reader/writer
