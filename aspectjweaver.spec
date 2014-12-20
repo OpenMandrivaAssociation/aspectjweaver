@@ -1,28 +1,23 @@
 %{?_javapackages_macros:%_javapackages_macros}
-Name:       aspectjweaver 
-Version:    1.6.12
-Release:    8.0%{?dist}
-Summary:    Java byte-code weaving library
-
-License:    EPL
-URL:        http://eclipse.org/aspectj/
-
-# wget -nd http://www.eclipse.org/downloads/download.php?file=/tools/aspectj/aspectj-1.6.12-src.jar
-# jar xf aspectj-1.6.12-src.jar aspectjweaver1.6.12-src.jar
-Source0:    aspectjweaver1.6.12-src.jar
+Name:          aspectjweaver 
+Version:       1.8.4
+Release:       1.1
+Summary:       Java byte-code weaving library
+Group:		Development/Java
+License:       EPL
+URL:           http://eclipse.org/aspectj/
+Source0:       http://repo1.maven.org/maven2/org/aspectj/%{name}/%{version}/%{name}-%{version}-sources.jar
 # This build.xml file was adapted from the Ubuntu package. The src jar has no build scripts.
-Source1:    aspectjweaver-build.xml
-Source2:    http://repo1.maven.org/maven2/org/aspectj/aspectjweaver/1.6.12/aspectjweaver-1.6.12.pom
-Patch0:     aspectjweaver-build-fixes.patch
+Source1:       aspectjweaver-build.xml
+Source2:       http://repo1.maven.org/maven2/org/aspectj/%{name}/%{version}/%{name}-%{version}.pom
+Source3:       epl-v10.txt
 
-BuildRequires:   java-devel
-BuildRequires:   jpackage-utils
-BuildRequires:   ant
-BuildRequires:   objectweb-asm
-BuildRequires:   apache-commons-logging
-Requires:        java
-Requires:        objectweb-asm
-BuildArch:       noarch
+BuildRequires: ant
+BuildRequires: apache-commons-logging
+BuildRequires: javapackages-local
+BuildRequires: objectweb-asm
+#Requires:      objectweb-asm
+BuildArch:     noarch
 
 %description
 The AspectJ Weaver supports byte-code weaving for aspect-oriented
@@ -31,48 +26,65 @@ programming (AOP) in java.
 %package javadoc
 Summary:        Javadoc for %{name}
 
-Requires:       jpackage-utils
-
 %description javadoc
 API documentation for %{summary}.
 
-
 %prep
 %setup -q -c
-%patch0 -p1
+sed -i.objectweb-asm "s|import aj.|import |" \
+ org/aspectj/weaver/bcel/asm/StackMapAdder.java
+
 cp %{SOURCE1} build.xml
+
 # JRockit is not open source, so we cannot build against it
 rm org/aspectj/weaver/loadtime/JRockitAgent.java
 
+cp %{SOURCE2} pom.xml
+%pom_xpath_inject "pom:project" "
+  <dependencies>
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm</artifactId>
+      <version>5.0.3</version>
+    </dependency>
+  </dependencies>"
+
+cp %{SOURCE3} .
+  
 %build
-%if 0%{?fedora}
+export LC_ALL=en_US.ISO8859-1
+
+%mvn_file org.aspectj:%{name} %{name}
+%mvn_alias org.aspectj:%{name} "org.aspectj:aspectjrt" "aspectj:aspectjrt"
 LANG=en_US.ISO8859-1 CLASSPATH=$( build-classpath objectweb-asm/asm commons-logging ) ant
-%else
-LC_ALL=en_US CLASSPATH=$( build-classpath objectweb-asm/asm commons-logging ) ant
-%endif
-ant javadoc
+LANG=en_US.ISO8859-1 CLASSPATH=$( build-classpath objectweb-asm/asm commons-logging ) ant javadoc
+%mvn_artifact pom.xml build/%{name}.jar
 
 %install
-install -d -m 0755 ${RPM_BUILD_ROOT}/%{_javadir}
-install -m 0644 build/%{name}.jar ${RPM_BUILD_ROOT}/%{_javadir}/%{name}.jar
+%mvn_install -J javadoc
 
-install -d -m 0755 ${RPM_BUILD_ROOT}/%{_mavenpomdir}
-install -m 0644 %{SOURCE2} ${RPM_BUILD_ROOT}/%{_mavenpomdir}/JPP-%{name}.pom
+%files -f .mfiles
+%doc epl-v10.txt
 
-install -d -m 0755 ${RPM_BUILD_ROOT}/%{_javadocdir}
-cp -rp javadoc ${RPM_BUILD_ROOT}/%{_javadocdir}/%{name}
-
-%add_maven_depmap JPP-%{name}.pom %{name}.jar -a "org.aspectj:aspectjrt"
-
-%files
-%{_javadir}/%{name}.jar
-%{_mavenpomdir}/JPP-%{name}.pom
-%{_mavendepmapfragdir}/%{name}
-
-%files javadoc
-%{_javadocdir}/*
+%files javadoc -f .mfiles-javadoc
+%doc epl-v10.txt
 
 %changelog
+* Tue Dec 09 2014 gil cattaneo <puntogil@libero.it> 1.8.4-1
+- update to 1.8.4
+
+* Sat Jun 07 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.6.12-12
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
+
+* Fri Mar 28 2014 Michael Simacek <msimacek@redhat.com> - 1.6.12-11
+- Use Requires: java-headless rebuild (#1067528)
+
+* Mon Mar 24 2014 Michal Srb <msrb@redhat.com> - 1.6.12-10
+- Add alias aspectj:aspectjrt
+
+* Thu Nov 14 2013 gil cattaneo <puntogil@libero.it> 1.6.12-9
+- use objectweb-asm3
+
 * Tue Oct 15 2013 Michal Srb <msrb@redhat.com> - 1.6.12-8
 - Add alias org.aspectj:aspectjr
 
@@ -97,3 +109,4 @@ cp -rp javadoc ${RPM_BUILD_ROOT}/%{_javadocdir}/%{name}
 
 * Tue Dec 20 2011 Andy Grimm <agrimm@gmail.com> 1.6.12-1
 - Initial Package
+
