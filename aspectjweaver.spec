@@ -1,7 +1,7 @@
 %{?_javapackages_macros:%_javapackages_macros}
 Name:          aspectjweaver 
 Version:       1.8.4
-Release:       1.2
+Release:       1.3
 Summary:       Java byte-code weaving library
 Group:		Development/Java
 License:       EPL
